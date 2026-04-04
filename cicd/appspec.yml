@@ -1,0 +1,31 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /
+    destination: /home/ec2-user/app
+
+hooks:
+  # Runs on GREEN instances — install Docker + pull image
+  BeforeInstall:
+    - location: cicd/scripts/before_install.sh
+      timeout: 120
+      runas: root
+
+  # Runs on GREEN instances — start container
+  AfterInstall:
+    - location: cicd/scripts/after_install.sh
+      timeout: 120
+      runas: root
+
+  # Validate GREEN instance health before traffic shift
+  ValidateService:
+    - location: cicd/scripts/validate.sh
+      timeout: 60
+      runas: root
+
+  # Runs after ALB shifts traffic to GREEN
+  AfterAllowTraffic:
+    - location: cicd/scripts/after_allow_traffic.sh
+      timeout: 30
+      runas: root
