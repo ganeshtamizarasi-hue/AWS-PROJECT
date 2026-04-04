@@ -6,7 +6,7 @@ resource "aws_secretsmanager_secret" "wordpress_db" {
   name                    = "wordpress-db-secret"
   description             = "WordPress RDS credentials"
   recovery_window_in_days = 0
-  tags = { Name = "${var.environment}-wordpress-db-secret" }
+  tags                    = { Name = "${var.environment}-wordpress-db-secret" }
 }
 
 resource "aws_secretsmanager_secret_version" "wordpress_db" {

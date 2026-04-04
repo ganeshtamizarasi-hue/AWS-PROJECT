@@ -37,7 +37,7 @@ resource "aws_codebuild_project" "wordpress" {
     compute_type    = "BUILD_GENERAL1_SMALL"
     image           = "aws/codebuild/standard:7.0"
     type            = "LINUX_CONTAINER"
-    privileged_mode = true   # Required for Docker builds
+    privileged_mode = true # Required for Docker builds
 
     environment_variable {
       name  = "ECR_REPO_URL"
@@ -141,7 +141,7 @@ resource "aws_codedeploy_deployment_group" "wordpress" {
   }
 
   deployment_config_name = "CodeDeployDefault.OneAtATime"
-  tags = { Name = "${var.environment}-codedeploy-bg" }
+  tags                   = { Name = "${var.environment}-codedeploy-bg" }
 }
 
 # ── CodePipeline ──────────────────────────────────────────────

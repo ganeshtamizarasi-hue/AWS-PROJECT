@@ -18,5 +18,5 @@ resource "aws_db_instance" "wordpress" {
   multi_az               = false
   publicly_accessible    = false
   skip_final_snapshot    = true
-  tags = { Name = "${var.environment}-rds" }
+  tags                   = { Name = "${var.environment}-rds" }
 }

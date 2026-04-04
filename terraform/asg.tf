@@ -1,8 +1,16 @@
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
   owners      = ["amazon"]
-  filter { name = "name";                values = ["al2023-ami-*-x86_64"] }
-  filter { name = "virtualization-type"; values = ["hvm"] }
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 
 resource "aws_launch_template" "wordpress" {
@@ -19,7 +27,6 @@ resource "aws_launch_template" "wordpress" {
     security_groups             = [aws_security_group.app.id]
   }
 
-  # Installs Docker + CodeDeploy agent + pulls image from ECR on boot
   user_data = base64encode(templatefile("${path.module}/../scripts/user-data.sh", {
     ecr_repo_url = aws_ecr_repository.wordpress.repository_url
     secret_name  = aws_secretsmanager_secret.wordpress_db.name
@@ -28,10 +35,14 @@ resource "aws_launch_template" "wordpress" {
 
   tag_specifications {
     resource_type = "instance"
-    tags = { Name = "${var.environment}-app-server" }
+    tags = {
+      Name = "${var.environment}-app-server"
+    }
   }
 
-  lifecycle { create_before_destroy = true }
+  lifecycle {
+    create_before_destroy = true
+  }
 
   depends_on = [aws_secretsmanager_secret_version.wordpress_db]
 }
@@ -84,7 +95,10 @@ resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   statistic           = "Average"
   threshold           = 70
   alarm_actions       = [aws_autoscaling_policy.scale_out.arn]
-  dimensions          = { AutoScalingGroupName = aws_autoscaling_group.wordpress.name }
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.wordpress.name
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "low_cpu" {
@@ -97,5 +111,8 @@ resource "aws_cloudwatch_metric_alarm" "low_cpu" {
   statistic           = "Average"
   threshold           = 30
   alarm_actions       = [aws_autoscaling_policy.scale_in.arn]
-  dimensions          = { AutoScalingGroupName = aws_autoscaling_group.wordpress.name }
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.wordpress.name
+  }
 }
