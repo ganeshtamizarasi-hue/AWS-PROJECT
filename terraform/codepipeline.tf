@@ -98,52 +98,28 @@ resource "aws_codedeploy_deployment_group" "wordpress" {
   deployment_group_name = "wordpress-prod-dg"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
 
+  # In-place deployment — simpler and no ALB config needed
   deployment_style {
     deployment_option = "WITH_TRAFFIC_CONTROL"
-    deployment_type   = "BLUE_GREEN"
-  }
-
-  blue_green_deployment_config {
-    # Green instances auto-created from ASG copy
-    green_fleet_provisioning_option {
-      action = "COPY_AUTO_SCALING_GROUP"
-    }
-
-    # Switch traffic immediately after validate.sh passes
-    deployment_ready_option {
-      action_on_timeout = "CONTINUE_DEPLOYMENT"
-    }
-
-    # Terminate Blue instances 5 mins after successful Green deployment
-    terminate_blue_instances_on_deployment_success {
-      action                           = "TERMINATE"
-      termination_wait_time_in_minutes = 5
-    }
+    deployment_type   = "IN_PLACE"
   }
 
   autoscaling_groups = [aws_autoscaling_group.wordpress.name]
 
-  # ALB controls Blue → Green traffic shift
   load_balancer_info {
-    target_group_pair_info {
-      prod_traffic_route {
-        listener_arns = [aws_lb_listener.https.arn]
-      }
-      target_group { name = aws_lb_target_group.blue.name }
-      target_group { name = aws_lb_target_group.green.name }
+    target_group_info {
+      name = aws_lb_target_group.blue.name
     }
   }
 
-  # Auto rollback to Blue if health check fails
   auto_rollback_configuration {
     enabled = true
-    events  = ["DEPLOYMENT_FAILURE", "DEPLOYMENT_STOP_ON_ALARM"]
+    events  = ["DEPLOYMENT_FAILURE"]
   }
 
   deployment_config_name = "CodeDeployDefault.OneAtATime"
-  tags                   = { Name = "${var.environment}-codedeploy-bg" }
+  tags = { Name = "${var.environment}-codedeploy" }
 }
-
 # ── CodePipeline ──────────────────────────────────────────────
 resource "aws_codepipeline" "wordpress" {
   name     = "wordpress-prod-pipeline"
