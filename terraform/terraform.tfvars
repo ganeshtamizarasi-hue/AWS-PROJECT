@@ -4,6 +4,6 @@ acm_certificate_arn = "arn:aws:acm:ap-south-1:145400477094:certificate/9a37a51b-
 
 acm_certificate_arn_us_east_1 = "arn:aws:acm:us-east-1:145400477094:certificate/d0f9fb5e-5776-4b7d-9e8a-1698562995aa"
 
-github_connection_arn = "arn:aws:codeconnections:ap-south-1:145400477094:connection/1fcea253-905d-48d7-a58c-eed788e6a4b2"
+github_connection_arn = "arn:aws:codeconnections:ap-south-1:145400477094:connection/0277be54-e92e-481a-93f6-d7735978b30a"
 
 github_repo = "ganeshtamizarasi-hue/AWS-PROJECT"
