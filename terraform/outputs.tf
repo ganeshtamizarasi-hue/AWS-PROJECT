@@ -28,10 +28,10 @@ output "pipeline_name" {
   description = "CodePipeline name"
 }
 
-output "cloudfront_dr" {
-  value       = aws_cloudfront_distribution.dr.domain_name
-  description = "CloudFront DR distribution domain"
-}
+#output "cloudfront_dr" {
+#  value       = aws_cloudfront_distribution.dr.domain_name
+#  description = "CloudFront DR distribution domain"
+#}
 
 output "rds_endpoint" {
   value       = aws_db_instance.wordpress.address
