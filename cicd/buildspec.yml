@@ -1,53 +1,29 @@
 version: 0.2
 
-env:
-  variables:
-    TF_VERSION: "1.6.0"
-
 phases:
-
-  install:
-    commands:
-      - echo "=== Installing Terraform ==="
-      - wget -q https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
-      - unzip -q terraform_${TF_VERSION}_linux_amd64.zip
-      - mv terraform /usr/local/bin/
-      - terraform --version
-      - apt-get install -y jq
-      - echo "=== Tools installed ==="
 
   pre_build:
     commands:
-      - echo "=== Logging into ECR ==="
+      - echo "Logging into ECR..."
       - aws ecr get-login-password --region $AWS_REGION_NAME | docker login --username AWS --password-stdin $ECR_REPO_URL
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)
       - echo "Image tag - $IMAGE_TAG"
 
   build:
     commands:
-      - echo "=== Step 1 - Terraform Apply ==="
-      - cd terraform/
-      - terraform init
-      - terraform apply -auto-approve
-      - echo "Terraform apply complete ✅"
-      - cd ..
-
-      - echo "=== Step 2 - Docker Build ==="
+      - echo "Building Docker image..."
       - docker build -t wordpress-app -f docker/Dockerfile .
       - echo "Docker build complete ✅"
-
-      - echo "=== Step 3 - Push to ECR ==="
       - docker tag wordpress-app:latest $ECR_REPO_URL:$IMAGE_TAG
       - docker tag wordpress-app:latest $ECR_REPO_URL:latest
       - docker push $ECR_REPO_URL:$IMAGE_TAG
       - docker push $ECR_REPO_URL:latest
       - echo "Image pushed to ECR ✅"
+      - printf '[{"name":"wordpress","imageUri":"%s"}]' $ECR_REPO_URL:$IMAGE_TAG > imagedef.json
 
   post_build:
     commands:
-      - echo "=== Build Complete ==="
-      - printf '[{"name":"wordpress","imageUri":"%s"}]' $ECR_REPO_URL:$IMAGE_TAG > imagedef.json
-      - echo "imagedef.json created ✅"
+      - echo "Build complete at $(date)"
 
 artifacts:
   files:
