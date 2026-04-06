@@ -22,7 +22,7 @@ resource "aws_codebuild_project" "wordpress" {
   name          = "wordpress-build"
   description   = "Run Terraform + Build Docker image + Push to ECR"
   service_role  = aws_iam_role.codebuild_role.arn
-  build_timeout = 30
+  build_timeout = 20
 
   source {
     type      = "CODEPIPELINE"
