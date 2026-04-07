@@ -1,12 +1,10 @@
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
   owners      = ["amazon"]
-
   filter {
     name   = "name"
     values = ["al2023-ami-*-x86_64"]
   }
-
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
@@ -25,6 +23,14 @@ resource "aws_launch_template" "wordpress" {
   network_interfaces {
     associate_public_ip_address = false
     security_groups             = [aws_security_group.app.id]
+  }
+
+  # Required for AL2023: enforce IMDSv2 and allow Docker containers
+  # to reach instance metadata (hop_limit=2)
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
   }
 
   user_data = base64encode(templatefile("${path.module}/../scripts/user-data.sh", {
@@ -55,7 +61,7 @@ resource "aws_autoscaling_group" "wordpress" {
   vpc_zone_identifier       = aws_subnet.private[*].id
   target_group_arns         = [aws_lb_target_group.blue.arn]
   health_check_type         = "ELB"
-  health_check_grace_period = 120
+  health_check_grace_period = 300
 
   launch_template {
     id      = aws_launch_template.wordpress.id
@@ -95,7 +101,6 @@ resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   statistic           = "Average"
   threshold           = 70
   alarm_actions       = [aws_autoscaling_policy.scale_out.arn]
-
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.wordpress.name
   }
@@ -111,7 +116,6 @@ resource "aws_cloudwatch_metric_alarm" "low_cpu" {
   statistic           = "Average"
   threshold           = 30
   alarm_actions       = [aws_autoscaling_policy.scale_in.arn]
-
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.wordpress.name
   }
