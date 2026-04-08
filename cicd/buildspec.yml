@@ -12,9 +12,12 @@ phases:
       - apt-get update -y
       - apt-get install -y unzip jq
       - wget -q https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
-      - ls -l   # debug (optional but useful)
-      - unzip terraform_${TF_VERSION}_linux_amd64.zip
-      - mv terraform /usr/local/bin/
+      
+      # Fix: overwrite without prompt + extract directly to bin
+      - unzip -o terraform_${TF_VERSION}_linux_amd64.zip -d /usr/local/bin/
+      
+      # Verify tools
+      - which unzip
       - terraform -version
       - echo "=== Tools installed ==="
 
