@@ -12,12 +12,7 @@ phases:
       - apt-get update -y
       - apt-get install -y unzip jq
       - wget -q https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
-      
-      # Fix: overwrite without prompt + extract directly to bin
       - unzip -o terraform_${TF_VERSION}_linux_amd64.zip -d /usr/local/bin/
-      
-      # Verify tools
-      - which unzip
       - terraform -version
       - echo "=== Tools installed ==="
 
@@ -56,7 +51,4 @@ phases:
 
 artifacts:
   files:
-    - imagedef.json
-    - cicd/appspec.yml
-    - cicd/scripts/**
-  discard-paths: no
+    - '**/*'
