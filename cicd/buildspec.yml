@@ -7,14 +7,15 @@ env:
 phases:
 
   install:
-    commands:
-      - echo "=== Installing Terraform ==="
-      - wget -q https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
-      - unzip terraform_${TF_VERSION}_linux_amd64.zip
-      - mv terraform /usr/local/bin/
-      - terraform --version
-      - apt-get install -y jq
-      - echo "=== Tools installed ==="
+  commands:
+    - echo "=== Installing Terraform ==="
+    - apt-get update -y
+    - apt-get install -y unzip jq
+    - wget -q https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+    - unzip terraform_${TF_VERSION}_linux_amd64.zip
+    - mv terraform /usr/local/bin/
+    - terraform -version
+    - echo "=== Tools installed ==="
 
   pre_build:
     commands:
