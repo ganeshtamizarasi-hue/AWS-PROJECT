@@ -1,58 +1,30 @@
 #!/bin/bash
 set -e
-echo "=== BeforeInstall Start ==="
+echo "=== BeforeInstall: Green Instance Setup ==="
 
-# ── Get IMDSv2 token ──────────────────────────────────────────
-TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
-  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-
-if [ -z "$TOKEN" ]; then
-  echo "ERROR: Failed to get IMDSv2 token"
-  exit 1
-fi
-
-# ── Get region from instance metadata ────────────────────────
-REGION=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
-  http://169.254.169.254/latest/dynamic/instance-identity/document \
-  | grep region | awk -F\" '{print $4}')
-
-if [ -z "$REGION" ]; then
-  echo "ERROR: Failed to get region from metadata"
-  exit 1
-fi
-
-echo "Region: $REGION"
-
-# ── Install Docker if missing ─────────────────────────────────
+# Install Docker if not already present
 if ! command -v docker &> /dev/null; then
   echo "Installing Docker..."
-  dnf install -y docker
-  systemctl enable docker --now
+  apt install -y docker
+  systemctl enable docker
+  systemctl start docker
 fi
-echo "Docker ready ✅"
+echo "Docker running ✅"
 
-# ── Install AWS CLI if missing ────────────────────────────────
-if ! command -v aws &> /dev/null; then
-  echo "Installing AWS CLI..."
-  dnf install -y unzip
-  curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
-  unzip -q /tmp/awscliv2.zip -d /tmp
-  /tmp/aws/install
-fi
-echo "AWS CLI ready ✅"
-
-# ── Login to ECR ──────────────────────────────────────────────
+# Get region + account from instance metadata
+REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ECR_URL="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
 
-echo "Logging into ECR: $ECR_URL"
-aws ecr get-login-password --region "$REGION" | \
-  docker login --username AWS --password-stdin "$ECR_URL"
-echo "ECR login success ✅"
+# Login to ECR
+echo "Logging into ECR..."
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ECR_URL
+echo "ECR login successful ✅"
 
-# ── Stop and remove old container ────────────────────────────
+# Stop existing container if running
 docker stop wordpress-container 2>/dev/null || true
-docker rm wordpress-container 2>/dev/null || true
-echo "Old container cleaned up ✅"
+docker rm   wordpress-container 2>/dev/null || true
 
-echo "=== BeforeInstall Completed ==="
+echo "BeforeInstall complete ✅"
+
