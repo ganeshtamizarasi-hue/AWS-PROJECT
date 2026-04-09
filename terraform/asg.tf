@@ -1,16 +1,21 @@
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
   owners      = ["amazon"]
+
   filter {
     name   = "name"
     values = ["al2023-ami-*-x86_64"]
   }
+
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
 }
 
+# ═══════════════════════════════════════════════════════
+# Launch Template
+# ═══════════════════════════════════════════════════════
 resource "aws_launch_template" "wordpress" {
   name_prefix   = "${var.environment}-wordpress-lt-"
   image_id      = data.aws_ami.amazon_linux_2023.id
@@ -20,13 +25,22 @@ resource "aws_launch_template" "wordpress" {
     name = aws_iam_instance_profile.ec2_profile.name
   }
 
+  # 🔥 FIX: Increase disk size (VERY IMPORTANT)
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size           = 30   # 🔥 30GB (fixes your error)
+      volume_type           = "gp3"
+      delete_on_termination = true
+    }
+  }
+
   network_interfaces {
     associate_public_ip_address = false
     security_groups             = [aws_security_group.app.id]
   }
 
-  # Required for AL2023: enforce IMDSv2 and allow Docker containers
-  # to reach instance metadata (hop_limit=2)
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
@@ -53,6 +67,9 @@ resource "aws_launch_template" "wordpress" {
   depends_on = [aws_secretsmanager_secret_version.wordpress_db]
 }
 
+# ═══════════════════════════════════════════════════════
+# Auto Scaling Group
+# ═══════════════════════════════════════════════════════
 resource "aws_autoscaling_group" "wordpress" {
   name                      = "${var.environment}-wordpress-asg"
   min_size                  = 2
@@ -75,6 +92,9 @@ resource "aws_autoscaling_group" "wordpress" {
   }
 }
 
+# ═══════════════════════════════════════════════════════
+# Auto Scaling Policies
+# ═══════════════════════════════════════════════════════
 resource "aws_autoscaling_policy" "scale_out" {
   name                   = "${var.environment}-scale-out"
   autoscaling_group_name = aws_autoscaling_group.wordpress.name
@@ -91,6 +111,9 @@ resource "aws_autoscaling_policy" "scale_in" {
   cooldown               = 300
 }
 
+# ═══════════════════════════════════════════════════════
+# CloudWatch Alarms
+# ═══════════════════════════════════════════════════════
 resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   alarm_name          = "${var.environment}-high-cpu"
   comparison_operator = "GreaterThanThreshold"
@@ -101,6 +124,7 @@ resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   statistic           = "Average"
   threshold           = 70
   alarm_actions       = [aws_autoscaling_policy.scale_out.arn]
+
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.wordpress.name
   }
@@ -116,6 +140,7 @@ resource "aws_cloudwatch_metric_alarm" "low_cpu" {
   statistic           = "Average"
   threshold           = 30
   alarm_actions       = [aws_autoscaling_policy.scale_in.arn]
+
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.wordpress.name
   }
