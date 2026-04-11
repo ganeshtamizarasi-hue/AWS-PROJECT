@@ -1,3 +1,6 @@
+# ─────────────────────────────────────────────
+# AMI (Amazon Linux 2023)
+# ─────────────────────────────────────────────
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
   owners      = ["amazon"]
@@ -13,9 +16,9 @@ data "aws_ami" "amazon_linux_2023" {
   }
 }
 
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────
 # Launch Template
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────
 resource "aws_launch_template" "wordpress" {
   name_prefix   = "${var.environment}-wordpress-lt-"
   image_id      = data.aws_ami.amazon_linux_2023.id
@@ -25,12 +28,12 @@ resource "aws_launch_template" "wordpress" {
     name = aws_iam_instance_profile.ec2_profile.name
   }
 
-  # 🔥 FIX: Increase disk size (VERY IMPORTANT)
+  # Disk size
   block_device_mappings {
     device_name = "/dev/xvda"
 
     ebs {
-      volume_size           = 40  # 🔥 30GB (fixes your error)
+      volume_size           = 40
       volume_type           = "gp3"
       delete_on_termination = true
     }
@@ -47,11 +50,18 @@ resource "aws_launch_template" "wordpress" {
     http_put_response_hop_limit = 2
   }
 
+  # ✅ FIXED user_data (EFS added correctly)
   user_data = base64encode(templatefile("${path.module}/../scripts/user-data.sh", {
     ecr_repo_url = aws_ecr_repository.wordpress.repository_url
     secret_name  = aws_secretsmanager_secret.wordpress_db.name
     region       = var.aws_region
+    efs_id       = aws_efs_file_system.wordpress.id
   }))
+
+  # ✅ IMPORTANT: Wait for EFS mount targets
+  depends_on = [
+    aws_efs_mount_target.wordpress
+  ]
 
   tag_specifications {
     resource_type = "instance"
@@ -63,13 +73,11 @@ resource "aws_launch_template" "wordpress" {
   lifecycle {
     create_before_destroy = true
   }
-
-  depends_on = [aws_secretsmanager_secret_version.wordpress_db]
 }
 
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────
 # Auto Scaling Group
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────
 resource "aws_autoscaling_group" "wordpress" {
   name                      = "${var.environment}-wordpress-asg"
   min_size                  = 2
@@ -78,7 +86,7 @@ resource "aws_autoscaling_group" "wordpress" {
   vpc_zone_identifier       = aws_subnet.private[*].id
   target_group_arns         = [aws_lb_target_group.blue.arn]
   health_check_type         = "ELB"
-  health_check_grace_period = 300
+  health_check_grace_period = 120
 
   launch_template {
     id      = aws_launch_template.wordpress.id
@@ -92,9 +100,9 @@ resource "aws_autoscaling_group" "wordpress" {
   }
 }
 
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────
 # Auto Scaling Policies
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────
 resource "aws_autoscaling_policy" "scale_out" {
   name                   = "${var.environment}-scale-out"
   autoscaling_group_name = aws_autoscaling_group.wordpress.name
@@ -111,9 +119,9 @@ resource "aws_autoscaling_policy" "scale_in" {
   cooldown               = 300
 }
 
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────
 # CloudWatch Alarms
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────
 resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   alarm_name          = "${var.environment}-high-cpu"
   comparison_operator = "GreaterThanThreshold"

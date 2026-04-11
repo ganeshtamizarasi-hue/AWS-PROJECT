@@ -15,25 +15,25 @@ echo "Image pulled ✅"
 docker stop wordpress-container 2>/dev/null || true
 docker rm wordpress-container 2>/dev/null || true
 
-# Run container
+# 🔥 Create health check file in EFS (HOST)
+echo "Creating health check file in EFS..."
+echo "OK" > /var/www/html/healthy.html
+chmod 777 /var/www/html/healthy.html
+
+# Run container (mount EFS inside container)
 echo "Starting WordPress container..."
 docker run -d \
   --name wordpress-container \
   --restart always \
   -p 80:80 \
+  -v /var/www/html:/var/www/html \
   -e SECRET_NAME="wordpress-db-secret" \
   -e AWS_REGION="$REGION" \
   $ECR_URL:latest
 
 echo "Container started ✅"
 
-# 🔥 IMPORTANT: Create health check file INSIDE container
-echo "Creating health check file..."
-docker exec wordpress-container bash -c "echo 'OK' > /var/www/html/healthy.html"
-
-echo "Health check file created ✅"
-
-# Wait for app warmup
+# Wait for warmup
 sleep 20
 
 echo "AfterInstall complete ✅"
