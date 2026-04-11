@@ -3,7 +3,7 @@ set -e
 
 echo "=== BeforeInstall: Green Instance Setup ==="
 
-# Install Docker (Amazon Linux 2023 uses dnf, not apt)
+# Install Docker
 if ! command -v docker &> /dev/null; then
   echo "Installing Docker..."
   sudo dnf install -y docker
@@ -13,23 +13,37 @@ fi
 
 echo "Docker running ✅"
 
-# Get region from instance metadata
-REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+# FIX 1: Use IMDSv2 (IMPORTANT)
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
-# Get AWS Account ID
+REGION=$(curl -s \
+  -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/placement/region)
+
+echo "Region detected: $REGION"
+
+# Safety check
+if [ -z "$REGION" ]; then
+  echo "ERROR: Region not found ❌"
+  exit 1
+fi
+
+# Get account ID
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-# Build ECR URL
+# ECR URL
 ECR_URL="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
 
-# Login to ECR
 echo "Logging into ECR..."
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ECR_URL
+
+# FIX 2: Proper login (non-interactive)
+aws ecr get-login-password --region "$REGION" | \
+docker login --username AWS --password-stdin "$ECR_URL"
 
 echo "ECR login successful ✅"
 
-# Stop existing container if running
+# Stop old container
 docker stop wordpress-container 2>/dev/null || true
 docker rm wordpress-container 2>/dev/null || true
 
