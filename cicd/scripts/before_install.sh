@@ -1,74 +1,49 @@
 #!/bin/bash
 set -e
+echo "=== BeforeInstall: Setup Green Instance ==="
 
-echo "=== BeforeInstall: Green Instance Setup ==="
+# ── Hardcode region ───────────────────────────────────────────
+REGION="ap-south-1"
 
-# -------------------------------
-# Install AWS CLI (if missing)
-# -------------------------------
-if ! command -v aws &> /dev/null; then
-  echo "Installing AWS CLI..."
-  sudo dnf install -y awscli
-fi
+# ── Get Account ID ────────────────────────────────────────────
+ACCOUNT_ID=$(aws sts get-caller-identity \
+  --region "$REGION" \
+  --query Account \
+  --output text)
 
-echo "AWS CLI installed ✅"
+echo "Region     : $REGION"
+echo "Account ID : $ACCOUNT_ID"
 
-# -------------------------------
-# Install Docker (if missing)
-# -------------------------------
+# ── Install Docker if not present ─────────────────────────────
 if ! command -v docker &> /dev/null; then
   echo "Installing Docker..."
-  sudo dnf install -y docker
-  sudo systemctl enable docker
-  sudo systemctl start docker
+  dnf install -y docker
+  systemctl enable docker
+  systemctl start docker
+  echo "Docker installed ✅"
+else
+  echo "Docker already installed ✅"
+  systemctl start docker || true
 fi
 
-echo "Docker running ✅"
-
-# -------------------------------
-# Get IMDSv2 token
-# -------------------------------
-TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
-  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-
-# -------------------------------
-# Get Region (IMPORTANT FIX)
-# -------------------------------
-REGION=$(curl -s \
-  -H "X-aws-ec2-metadata-token: $TOKEN" \
-  http://169.254.169.254/latest/meta-data/placement/region)
-
-echo "Region detected: $REGION"
-
-# Safety check
-if [ -z "$REGION" ]; then
-  echo "ERROR: Region not found ❌"
-  exit 1
-fi
-
-# -------------------------------
-# Get AWS Account ID
-# -------------------------------
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
-echo "Account ID: $ACCOUNT_ID"
-
-# -------------------------------
-# ECR Login
-# -------------------------------
-ECR_URL="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
-
+# ── ECR Login (file method) ───────────────────────────────────
+ECR_REPO="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
 echo "Logging into ECR..."
 
-aws ecr get-login-password --region "$REGION" | \
-docker login --username AWS --password-stdin "$ECR_URL"
+aws ecr get-login-password \
+  --region "$REGION" > /tmp/ecr_token
 
+docker login \
+  --username AWS \
+  --password-stdin \
+  "$ECR_REPO" < /tmp/ecr_token
+
+rm -f /tmp/ecr_token
 echo "ECR login successful ✅"
 
-# -------------------------------
-# Cleanup old container
-# -------------------------------
+# ── Stop old container ────────────────────────────────────────
 docker stop wordpress-container 2>/dev/null || true
-docker rm wordpress-container 2>/dev/null || true
+docker rm   wordpress-container 2>/dev/null || true
+echo "Old container removed ✅"
 
-echo "BeforeInstall complete ✅"
+echo "=== BeforeInstall complete ✅ ==="

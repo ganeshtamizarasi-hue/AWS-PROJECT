@@ -2,8 +2,8 @@
 set -e
 echo "=== AfterInstall: Pull Image + Start Container ==="
 
-# ── Get metadata first, then use ──────────────────────────────
-REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+# ── Hardcode region — curl metadata unreliable on Green instances
+REGION="ap-south-1"
 ACCOUNT_ID=$(aws sts get-caller-identity \
   --region "$REGION" \
   --query Account \
@@ -16,7 +16,7 @@ echo "Region    : $REGION"
 echo "Account   : $ACCOUNT_ID"
 echo "ECR Image : $ECR_IMAGE"
 
-# ── ECR Login (file method — avoids non-TTY error) ────────────
+# ── ECR Login ─────────────────────────────────────────────────
 echo "Logging into ECR..."
 aws ecr get-login-password \
   --region "$REGION" > /tmp/ecr_token
@@ -38,7 +38,7 @@ echo "Image pulled ✅"
 docker stop wordpress-container 2>/dev/null || true
 docker rm   wordpress-container 2>/dev/null || true
 
-# ── Run new container ─────────────────────────────────────────
+# ── Run container ─────────────────────────────────────────────
 echo "Starting WordPress container..."
 docker run -d \
   --name wordpress-container \
@@ -49,14 +49,12 @@ docker run -d \
   "$ECR_IMAGE"
 echo "Container started ✅"
 
-# ── Wait for warmup ───────────────────────────────────────────
 sleep 20
 
-# ── Health check file inside container ───────────────────────
-echo "Creating health check file..."
+# ── Health check ──────────────────────────────────────────────
+echo "Creating health check..."
 docker exec wordpress-container \
-  bash -c "echo 'healthy' > /var/www/html/healthy.html && \
-           chmod 644 /var/www/html/healthy.html"
+  bash -c "echo 'healthy' > /var/www/html/healthy.html && chmod 644 /var/www/html/healthy.html"
 echo "Health check created ✅"
 
 echo "=== AfterInstall complete ✅ ==="
