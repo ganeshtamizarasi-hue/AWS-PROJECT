@@ -12,39 +12,47 @@
 
 ## 2. 🔒 ACM — SSL Certificates
 
-![ACM Certificates](screenshots/02-acm-certificates.png)
+### Certificate Issued — us-east-1 (CloudFront)
+
+<img width="979" height="341" alt="image" src="https://github.com/user-attachments/assets/38518e60-7a4e-40ed-91e1-f82638ea017e" />
+
+### Certificate Issued — ap-south-1
+
+<img width="979" height="250" alt="image" src="https://github.com/user-attachments/assets/3aff8bb3-2118-4bf7-be33-435e1a19a7ca" />
 
 > Public certificates issued for `ganeshc.shop` and `dr.ganeshc.shop` — status: **Issued ✅**
 
 ---
 
 ## 3. 🏗️ VPC — Network Setup
-
-![VPC](screenshots/03-vpc.png)
+### VPC Created — prod-vpc
+<img width="979" height="268" alt="image" src="https://github.com/user-attachments/assets/59595700-1eae-4004-8167-8c7a5edeed70" />
+### Subnets — Public & Private
+<img width="979" height="315" alt="image" src="https://github.com/user-attachments/assets/9887bdd0-a4e6-4b95-99da-4f14b717ad77" />
+### Route Tables
+<img width="979" height="277" alt="image" src="https://github.com/user-attachments/assets/00fe8297-5141-42a7-9e4a-41afb56c6809" />
+### Internet Gateway
+<img width="979" height="258" alt="image" src="https://github.com/user-attachments/assets/b4e15851-a7df-4aac-9420-30c0a6e5e323" />
+<img width="979" height="241" alt="image" src="https://github.com/user-attachments/assets/de98d81d-9a9e-44e3-9318-386b5874aee4" />
 
 > `prod-vpc` created with CIDR block, public and private subnets across availability zones.
 
 ---
 
 ## 4. 🔀 Subnets
-
-![Subnets](screenshots/04-subnets.png)
+<img width="979" height="301" alt="image" src="https://github.com/user-attachments/assets/8a3f46fe-7a3f-4df0-a51a-badc175d866d" />
 
 > Public subnets (for ALB) and private subnets (for EC2 + RDS) configured across multiple AZs.
 
 ---
 
 ## 5. 🛡️ Security Groups
-
-![Security Groups](screenshots/05-security-groups.png)
+<img width="979" height="363" alt="image" src="https://github.com/user-attachments/assets/59e456eb-ea3b-4286-a735-27908a1d6b6e" />
 
 > 4 security groups created — ALB, EC2, RDS, and EFS — with least-privilege inbound/outbound rules.
 
----
-
 ## 6. 🗄️ RDS — MySQL Database
-
-![RDS Instance](screenshots/06-rds.png)
+<img width="979" height="265" alt="image" src="https://github.com/user-attachments/assets/623c9cf6-c3b4-4274-8a82-d7e528665a37" />
 
 > `prod-wordpress-db` MySQL instance running in private subnet — status: **Available ✅**
 
@@ -52,7 +60,7 @@
 
 ## 7. 🔑 Secrets Manager
 
-![Secrets Manager](screenshots/07-secrets-manager.png)
+<img width="979" height="287" alt="image" src="https://github.com/user-attachments/assets/1a7f11af-587f-48a8-b625-316a7ec327f6" />
 
 > `wordpress-db-secret` storing DB credentials — retrieved at runtime by the Docker container.
 
@@ -60,7 +68,7 @@
 
 ## 8. 📁 EFS — Shared Storage
 
-![EFS](screenshots/08-efs.png)
+<img width="979" height="318" alt="image" src="https://github.com/user-attachments/assets/357ff49f-6053-4652-8e7c-c944f3243fcb" />
 
 > `prod-wordpress-efs` mounted across all EC2 instances to share `wp-content` (uploads, plugins, themes).
 
@@ -68,15 +76,14 @@
 
 ## 9. 🐳 ECR — Docker Image Registry
 
-![ECR Repository](screenshots/09-ecr-repository.png)
+<img width="979" height="327" alt="image" src="https://github.com/user-attachments/assets/e43ccf99-beba-42d9-896a-689093424c3f" />
 
 > `prod-wordpress` repository with the latest WordPress Docker image pushed successfully.
 
 ---
-
 ## 10. 🐳 ECR — Image Details
 
-![ECR Image](screenshots/10-ecr-image.png)
+<img width="979" height="275" alt="image" src="https://github.com/user-attachments/assets/6ab8a2ca-842f-4010-b3c4-2e11d8220a6e" />
 
 > Docker image tagged as `latest` — pushed from EC2 via `docker push`.
 
@@ -84,7 +91,7 @@
 
 ## 11. ⚖️ ALB — Application Load Balancer
 
-![ALB](screenshots/11-alb.png)
+<img width="979" height="340" alt="image" src="https://github.com/user-attachments/assets/7e2ef44e-48bf-4acb-b2b6-bbedb04b4fce" />
 
 > `prod-alb` active in public subnets — HTTPS listener on port 443 with ACM certificate attached.
 
@@ -92,7 +99,8 @@
 
 ## 12. 🎯 Target Groups — Blue & Green
 
-![Target Groups](screenshots/12-target-groups.png)
+<img width="979" height="222" alt="image" src="https://github.com/user-attachments/assets/9970d1aa-780b-4122-9d2e-e74742f27e92" />
+
 
 > `prod-blue-tg` and `prod-green-tg` both created — ready for Blue/Green traffic switching.
 
@@ -100,7 +108,7 @@
 
 ## 13. 💚 Target Group — Healthy Instances
 
-![Target Group Healthy](screenshots/13-target-group-healthy.png)
+<img width="979" height="363" alt="image" src="https://github.com/user-attachments/assets/a0d0aa31-8bf8-4f59-a477-9c0457d3625a" />
 
 > EC2 instances registered and showing **Healthy** status in the active target group ✅
 
@@ -108,15 +116,15 @@
 
 ## 14. 📈 Auto Scaling Group
 
-![ASG](screenshots/14-asg.png)
+<img width="979" height="311" alt="image" src="https://github.com/user-attachments/assets/cc2e7126-11af-46c2-928f-f9d6279ad3a5" />
+
 
 > `prod-wordpress-asg` configured with Launch Template (AL2023, IMDSv2, Docker) — min/max/desired capacity set.
 
 ---
 
 ## 15. 🚀 EC2 Instances — Running
-
-![EC2 Instances](screenshots/15-ec2-instances.png)
+<img width="979" height="339" alt="image" src="https://github.com/user-attachments/assets/2e0a5769-e51e-499f-a15c-b0fdd697746a" />
 
 > EC2 instances launched by ASG in private subnets — running WordPress Docker container.
 
@@ -124,7 +132,6 @@
 
 ## 16. 🔧 IAM Roles
 
-![IAM Roles](screenshots/16-iam-roles.png)
 
 > Least-privilege IAM roles created for EC2, CodeBuild, CodeDeploy, and CodePipeline.
 
@@ -132,7 +139,8 @@
 
 ## 17. 🪣 S3 — Terraform State Bucket
 
-![S3 Bucket](screenshots/17-s3-bucket.png)
+<img width="979" height="388" alt="image" src="https://github.com/user-attachments/assets/92d11219-a7fb-4f4a-bd0b-26d1fd69f7cd" />
+
 
 > `ganeshc-terraform-state` with versioning enabled — stores Terraform state securely.
 
@@ -140,7 +148,8 @@
 
 ## 18. ⚙️ CodePipeline — Pipeline Overview
 
-![CodePipeline](screenshots/18-codepipeline.png)
+<img width="979" height="265" alt="image" src="https://github.com/user-attachments/assets/dfb51549-7971-4a8c-b2f4-c869279bab0e" />
+
 
 > `wordpress-prod-pipeline` with 3 stages: Source (GitHub) → Build (CodeBuild) → Deploy (CodeDeploy).
 
@@ -148,7 +157,8 @@
 
 ## 19. 🏗️ CodeBuild — Build Success
 
-![CodeBuild](screenshots/19-codebuild-success.png)
+<img width="979" height="387" alt="image" src="https://github.com/user-attachments/assets/4bedfae4-c07a-4be0-bee5-bae069b3868e" />
+
 
 > Docker image built and pushed to ECR successfully — all build phases passed ✅
 
@@ -156,7 +166,8 @@
 
 ## 20. 🔵🟢 CodeDeploy — Blue/Green Deployment
 
-![CodeDeploy](screenshots/20-codedeploy-bluegreen.png)
+<img width="979" height="390" alt="image" src="https://github.com/user-attachments/assets/01ac7723-409a-467f-b05a-c860d668406c" />
+<img width="979" height="433" alt="image" src="https://github.com/user-attachments/assets/74195f67-cf01-46d2-993d-a94ec20ec9de" />
 
 > Blue/Green deployment completed — traffic shifted from Blue to Green, old instances terminated ✅
 
@@ -164,7 +175,8 @@
 
 ## 🌐 WordPress — Live Site
 
-![WordPress Live](screenshots/21-wordpress-live.png)
+<img width="979" height="444" alt="image" src="https://github.com/user-attachments/assets/e5aad217-fc9c-4677-a16e-49bfb0754b56" />
+
 
 > `https://ganeshc.shop` live and serving WordPress via ALB + EC2 + RDS ✅
 
