@@ -12,11 +12,11 @@
 
 ## 2. 🔒 ACM — SSL Certificates
 
-### Certificate Issued — us-east-1 (CloudFront)
+### Certificate Issued — ap-south-1
 
 <img width="979" height="341" alt="image" src="https://github.com/user-attachments/assets/38518e60-7a4e-40ed-91e1-f82638ea017e" />
 
-### Certificate Issued — ap-south-1
+### Certificate Issued — us-east-1 (CloudFront)
 
 <img width="979" height="250" alt="image" src="https://github.com/user-attachments/assets/3aff8bb3-2118-4bf7-be33-435e1a19a7ca" />
 
@@ -27,12 +27,13 @@
 ## 3. 🏗️ VPC — Network Setup
 ### VPC Created — prod-vpc
 <img width="979" height="268" alt="image" src="https://github.com/user-attachments/assets/59595700-1eae-4004-8167-8c7a5edeed70" />
-### Subnets — Public & Private
-<img width="979" height="315" alt="image" src="https://github.com/user-attachments/assets/9887bdd0-a4e6-4b95-99da-4f14b717ad77" />
 ### Route Tables
-<img width="979" height="277" alt="image" src="https://github.com/user-attachments/assets/00fe8297-5141-42a7-9e4a-41afb56c6809" />
+<img width="979" height="315" alt="image" src="https://github.com/user-attachments/assets/9887bdd0-a4e6-4b95-99da-4f14b717ad77" />
 ### Internet Gateway
+<img width="979" height="277" alt="image" src="https://github.com/user-attachments/assets/00fe8297-5141-42a7-9e4a-41afb56c6809" />
+### Elastic Ip
 <img width="979" height="258" alt="image" src="https://github.com/user-attachments/assets/b4e15851-a7df-4aac-9420-30c0a6e5e323" />
+### NAT Gateway
 <img width="979" height="241" alt="image" src="https://github.com/user-attachments/assets/de98d81d-9a9e-44e3-9318-386b5874aee4" />
 
 > `prod-vpc` created with CIDR block, public and private subnets across availability zones.
@@ -115,9 +116,10 @@
 ---
 
 ## 14. 📈 Auto Scaling Group
-
+### ASG Created — prod-wordpress-asg
 <img width="979" height="311" alt="image" src="https://github.com/user-attachments/assets/cc2e7126-11af-46c2-928f-f9d6279ad3a5" />
-
+### Launch Template — AL2023 + IMDSv2
+<img width="979" height="315" alt="image" src="https://github.com/user-attachments/assets/fb2d857a-a9f2-4aa4-90c0-1ffd08303248" />
 
 > `prod-wordpress-asg` configured with Launch Template (AL2023, IMDSv2, Docker) — min/max/desired capacity set.
 
@@ -132,6 +134,7 @@
 
 ## 16. 🔧 IAM Roles
 
+<img width="979" height="397" alt="image" src="https://github.com/user-attachments/assets/ec54a24f-9ee1-47fc-8ae3-0b6b45c22304" />
 
 > Least-privilege IAM roles created for EC2, CodeBuild, CodeDeploy, and CodePipeline.
 
@@ -171,7 +174,11 @@
 
 > Blue/Green deployment completed — traffic shifted from Blue to Green, old instances terminated ✅
 
+**#21. CloudWatch Alarms**
+<img width="979" height="258" alt="image" src="https://github.com/user-attachments/assets/ab835f51-535f-48fe-86aa-8692672dba19" />
 ---
+## 22. CodeConnections — GitHub
+<img width="979" height="305" alt="image" src="https://github.com/user-attachments/assets/c3d1d575-8bfa-4c39-922f-3e79d1ae76c8" />
 
 ## 🌐 WordPress — Live Site
 
@@ -181,5 +188,3 @@
 > `https://ganeshc.shop` live and serving WordPress via ALB + EC2 + RDS ✅
 
 ---
-
-> ☁️ CloudFront DR setup (`dr.ganeshc.shop`) — screenshot coming soon
