@@ -5,12 +5,10 @@
 ---
 
 ## 1. 🌐 Route 53 — Hosted Zone
-
-![Route 53 Hosted Zone](screenshots/01-route53-hosted-zone.png)
+<img width="979" height="423" alt="image" src="https://github.com/user-attachments/assets/195d08ab-6f93-4a32-ba16-b169caa1d875" />
 
 > Hosted zone created for `ganeshc.shop` with NS records mapped to Hostinger DNS.
 
----
 
 ## 2. 🔒 ACM — SSL Certificates
 
