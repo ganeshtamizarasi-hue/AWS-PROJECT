@@ -24,7 +24,7 @@ hooks:
       timeout: 60
       runas: root
 
-  # Runs after ALB shifts traffic to GREEN
+  # Runs after ALB - shifts traffic to GREEN
   AfterAllowTraffic:
     - location: scripts/after_allow_traffic.sh
       timeout: 30

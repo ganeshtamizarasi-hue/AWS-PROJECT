@@ -1,5 +1,5 @@
 # ── Secrets Manager ───────────────────────────────────────────
-# Stores RDS credentials securely
+# Stores RDS credentials securely in Secret Manager
 # Docker container fetches this at runtime — zero hardcoded creds
 
 resource "aws_secretsmanager_secret" "wordpress_db" {

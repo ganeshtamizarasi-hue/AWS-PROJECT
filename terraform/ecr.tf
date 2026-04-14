@@ -1,3 +1,4 @@
+#   ECR REPOSITORY FOLDER
 resource "aws_ecr_repository" "wordpress" {
   name                 = "${var.environment}-wordpress"
   image_tag_mutability = "MUTABLE"

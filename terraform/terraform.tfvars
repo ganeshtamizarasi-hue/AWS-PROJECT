@@ -1,3 +1,5 @@
+# SSL AND USERNAME , GIT HUB CONNECTION
+
 db_password = "prodadm123"
 
 acm_certificate_arn = "arn:aws:acm:ap-south-1:145400477094:certificate/9a37a51b-80df-4de1-95f3-db6031d5897e"

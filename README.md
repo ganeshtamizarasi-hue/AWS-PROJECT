@@ -24,9 +24,7 @@
   - [6. Get GitHub Connection ARN](#6-get-github-connection-arn)
   - [7. Configure terraform.tfvars](#7-configure-terraformtfvars)
   - [8. Run Terraform](#8-run-terraform)
-  - [9. Build & Push Docker Image to ECR](#9-build--push-docker-image-to-ecr)
-  - [10. Install CodeDeploy Agent on EC2](#10-install-codedeploy-agent-on-ec2)
-  - [11. Trigger the CI/CD Pipeline](#11-trigger-the-cicd-pipeline)
+  - [9. Trigger the CI/CD Pipeline](#9-trigger-the-cicd-pipeline)
 - [CI/CD Pipeline Flow](#cicd-pipeline-flow)
 - [Blue/Green Deployment Strategy](#bluegreen-deployment-strategy)
 - [Testing & Validation](#testing--validation)
@@ -309,53 +307,9 @@ alb_dns_name  = "prod-alb-xxx.ap-south-1.elb.amazonaws.com"
 ecr_repo_url  = "145400477094.dkr.ecr.ap-south-1.amazonaws.com/prod-wordpress"
 pipeline_name = "wordpress-prod-pipeline"
 ```
-
 ---
 
-### 9. Build & Push Docker Image to ECR
-
-```bash
-# Install Docker
-apt install -y docker.io
-systemctl start docker && systemctl enable docker
-
-# Set variables
-ECR_URL="145400477094.dkr.ecr.ap-south-1.amazonaws.com/prod-wordpress"
-REGION="ap-south-1"
-
-# Login to ECR
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ECR_URL
-
-# Build, tag, and push
-cd ~/AWS-PROJECT
-docker build -t wordpress-app -f docker/Dockerfile .
-docker tag wordpress-app:latest $ECR_URL:latest
-docker push $ECR_URL:latest
-
-# Verify
-aws ecr list-images --repository-name prod-wordpress --region $REGION
-```
-
----
-
-### 10. Install CodeDeploy Agent on EC2
-
-```bash
-apt install -y ruby-full wget
-cd /home/ubuntu
-
-wget https://aws-codedeploy-ap-south-1.s3.ap-south-1.amazonaws.com/latest/install
-chmod +x ./install && ./install auto
-
-systemctl start codedeploy-agent
-systemctl enable codedeploy-agent
-systemctl status codedeploy-agent   # Should show: active (running) ✅
-```
-
----
-
-### 11. Trigger the CI/CD Pipeline
+### 9. Trigger the CI/CD Pipeline
 
 ```bash
 cd ~/AWS-PROJECT

@@ -8,7 +8,7 @@ if ! docker ps | grep -q wordpress-container; then
   echo "FAILED: Container not running ❌"
   exit 1
 fi
-echo "Container running ✅"
+echo "Container Running ✅"
 
 # Check health endpoint
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/healthy.html)

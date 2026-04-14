@@ -120,7 +120,7 @@ resource "aws_autoscaling_policy" "scale_in" {
 }
 
 # ─────────────────────────────────────────────
-# CloudWatch Alarms
+# Cloudwatch Alarms
 # ─────────────────────────────────────────────
 resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   alarm_name          = "${var.environment}-high-cpu"

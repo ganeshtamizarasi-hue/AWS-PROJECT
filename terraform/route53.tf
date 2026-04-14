@@ -31,15 +31,15 @@ resource "aws_route53_record" "www" {
 }
 
 # ── A Record: dr.ganeshc.shop → CloudFront ───────────────────
-# Uncomment after CloudFront is enabled
-# resource "aws_route53_record" "dr" {
-#   zone_id = data.aws_route53_zone.main.zone_id
-#   name    = "dr.ganeshc.shop"
-#   type    = "A"
-#
-#   alias {
-#     name                   = aws_cloudfront_distribution.dr.domain_name
-#     zone_id                = aws_cloudfront_distribution.dr.hosted_zone_id
-#     evaluate_target_health = false
-#   }
-# }
+
+ resource "aws_route53_record" "dr" {
+   zone_id = data.aws_route53_zone.main.zone_id
+   name    = "dr.ganeshc.shop"
+   type    = "A"
+
+   alias {
+     name                   = aws_cloudfront_distribution.dr.domain_name
+     zone_id                = aws_cloudfront_distribution.dr.hosted_zone_id
+     evaluate_target_health = false
+   }
+ }

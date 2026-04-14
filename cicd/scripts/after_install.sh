@@ -58,6 +58,6 @@ docker exec wordpress-container \
     echo 'healthy' > /var/www/html/healthy.html &&
     chmod 644 /var/www/html/healthy.html
   "
-echo "Permissions fixed ✅"
+echo "Permissions Fixed ✅"
 
 echo "=== AfterInstall complete ✅ ==="

@@ -45,7 +45,7 @@ phases:
 
   post_build:
     commands:
-      - echo "=== Build Complete ==="
+      - echo "== Build Complete =="
       - printf '[{"name":"wordpress","imageUri":"%s"}]' $ECR_REPO_URL:$IMAGE_TAG > imagedef.json
       - echo "imagedef.json created ✅"
 

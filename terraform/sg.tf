@@ -1,3 +1,4 @@
+#   SECURITY GROUPS
 resource "aws_security_group" "alb" {
   name        = "${var.environment}-sg-alb"
   description = "Allow HTTP and HTTPS from internet"

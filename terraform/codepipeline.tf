@@ -1,4 +1,4 @@
-# ── S3: Pipeline Artifacts ────────────────────────────────────
+# ── S3-: Pipeline Artifacts ────────────────────────────────────
 resource "aws_s3_bucket" "pipeline_artifacts" {
   bucket = "ganeshc-codepipeline-artifacts"
   tags   = { Name = "${var.environment}-pipeline-artifacts" }

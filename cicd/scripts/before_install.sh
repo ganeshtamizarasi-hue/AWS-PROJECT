@@ -28,7 +28,7 @@ fi
 
 # ── ECR Login (file method) ───────────────────────────────────
 ECR_REPO="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
-echo "Logging into ECR..."
+echo "Logging into ECR...."
 
 aws ecr get-login-password \
   --region "$REGION" > /tmp/ecr_token

@@ -1,3 +1,4 @@
+# TERRAFORM VERAION AND STATE FILE NAME
 terraform {
   required_version = ">= 1.0"
 

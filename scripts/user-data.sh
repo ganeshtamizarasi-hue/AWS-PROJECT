@@ -82,4 +82,4 @@ systemctl is-active codedeploy-agent && echo "CodeDeploy : ✅" || echo "CodeDep
 systemctl is-active docker            && echo "Docker     : ✅" || echo "Docker     : ❌"
 docker ps | grep -q wordpress         && echo "Container  : ✅" || echo "Container  : ❌"
 
-echo "===== BOOTSTRAP COMPLETE ====="
+echo "=== BOOTSTRAP COMPLETE ==="

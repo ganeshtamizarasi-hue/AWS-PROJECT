@@ -1,3 +1,4 @@
+# EFS FILE SYSTEM
 resource "aws_efs_file_system" "wordpress" {
   creation_token   = "${var.environment}-wordpress-efs"
   performance_mode = "generalPurpose"

@@ -25,13 +25,30 @@ if [ ! -f /var/www/html/wp-config.php ]; then
   echo "WordPress configured ✅"
 fi
 
-# ── Fix permissions so Apache can read all files ──────────────
+# ── ✅ FIX: Add HTTPS config BEFORE Apache starts ─────────────
+if ! grep -q "FORCE_SSL_ADMIN" /var/www/html/wp-config.php; then
+  cat >> /var/www/html/wp-config.php << 'WPEOF'
+
+#___ Force HTTPS — required behind ALB____
+
+define('FORCE_SSL_ADMIN', true);
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+  $_SERVER['HTTPS'] = 'on';
+}
+define('WP_HOME', 'https://ganeshc.shop');
+define('WP_SITEURL', 'https://ganeshc.shop');
+WPEOF
+  echo "HTTPS config added ✅"
+fi
+
+# ── Fix permissions ───────────────────────────────────────────
 chown -R www-data:www-data /var/www/html
 chmod -R 755 /var/www/html
-chmod 644 /var/www/html/wp-config.php   # readable by Apache
+chmod 644 /var/www/html/wp-config.php
+
 echo "Permissions fixed ✅"
 
-# ── Start Apache ──────────────────────────────────────────────
+# ── Start Apache (KEEP LAST ALWAYS) ───────────────────────────
 echo "Starting Apache..."
 exec apache2-foreground
 
