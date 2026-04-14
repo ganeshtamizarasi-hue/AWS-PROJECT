@@ -133,8 +133,7 @@
 ---
 
 ## 16. 🔧 IAM Roles
-
-<img width="979" height="397" alt="image" src="https://github.com/user-attachments/assets/ec54a24f-9ee1-47fc-8ae3-0b6b45c22304" />
+<img width="979" height="398" alt="image" src="https://github.com/user-attachments/assets/c8d21b33-d2d5-4397-9186-4c2cc59fb830" />
 
 > Least-privilege IAM roles created for EC2, CodeBuild, CodeDeploy, and CodePipeline.
 
