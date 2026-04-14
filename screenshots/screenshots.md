@@ -100,8 +100,7 @@
 
 ## 12. 🎯 Target Groups — Blue & Green
 
-<img width="979" height="222" alt="image" src="https://github.com/user-attachments/assets/9970d1aa-780b-4122-9d2e-e74742f27e92" />
-
+<img width="979" height="416" alt="image" src="https://github.com/user-attachments/assets/64399393-ce2d-49ca-b052-1fce6e6230a1" />
 
 > `prod-blue-tg` and `prod-green-tg` both created — ready for Blue/Green traffic switching.
 
@@ -170,7 +169,8 @@
 
 <img width="979" height="390" alt="image" src="https://github.com/user-attachments/assets/01ac7723-409a-467f-b05a-c860d668406c" />
 <img width="979" height="433" alt="image" src="https://github.com/user-attachments/assets/74195f67-cf01-46d2-993d-a94ec20ec9de" />
-
+<img width="979" height="358" alt="image" src="https://github.com/user-attachments/assets/dd7507a4-8d21-4fa7-bd86-092d55960c50" />
+<img width="979" height="339" alt="image" src="https://github.com/user-attachments/assets/654b88a5-1c7d-458b-8985-7d9d9c4f0fec" />
 > Blue/Green deployment completed — traffic shifted from Blue to Green, old instances terminated ✅
 
 **#21. CloudWatch Alarms**
@@ -182,6 +182,9 @@
 ## 🌐 WordPress — Live Site
 
 <img width="979" height="444" alt="image" src="https://github.com/user-attachments/assets/e5aad217-fc9c-4677-a16e-49bfb0754b56" />
+
+<img width="979" height="471" alt="image" src="https://github.com/user-attachments/assets/9bdf5a07-b7fc-4865-8b34-cc94661323c7" />
+
 
 
 > `https://ganeshc.shop` live and serving WordPress via ALB + EC2 + RDS ✅
