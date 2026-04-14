@@ -34,3 +34,18 @@ echo "Permissions fixed ✅"
 # ── Start Apache ──────────────────────────────────────────────
 echo "Starting Apache..."
 exec apache2-foreground
+
+# ── Add HTTPS config to wp-config.php ────────────────────────
+if ! grep -q "FORCE_SSL_ADMIN" /var/www/html/wp-config.php; then
+  cat >> /var/www/html/wp-config.php << 'WPEOF'
+
+# Force HTTPS — required behind ALB
+define('FORCE_SSL_ADMIN', true);
+if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+  $_SERVER['HTTPS'] = 'on';
+}
+define('WP_HOME', 'https://ganeshc.shop');
+define('WP_SITEURL', 'https://ganeshc.shop');
+WPEOF
+  echo "HTTPS config added ✅"
+fi
