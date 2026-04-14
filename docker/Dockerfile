@@ -16,6 +16,9 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 # Enable Apache rewrite
 RUN a2enmod rewrite
 
+# 🔥 VERY IMPORTANT FIX (permalinks will work after this)
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+
 # Download WordPress
 RUN curl -o /tmp/wordpress.tar.gz https://wordpress.org/latest.tar.gz \
     && tar -xzf /tmp/wordpress.tar.gz -C /tmp/ \
