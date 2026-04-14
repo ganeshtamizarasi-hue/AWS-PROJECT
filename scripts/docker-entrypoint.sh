@@ -25,19 +25,25 @@ if [ ! -f /var/www/html/wp-config.php ]; then
   echo "WordPress configured ✅"
 fi
 
-# ── ✅ FIX: Add HTTPS config BEFORE Apache starts ─────────────
-if ! grep -q "FORCE_SSL_ADMIN" /var/www/html/wp-config.php; then
+# ── ✅ Fix HTTPS for ALB (ONLY ONCE) ───────────────────────────
+if ! grep -q "X_FORWARDED_PROTO" /var/www/html/wp-config.php; then
+  echo "Applying ALB HTTPS fix..."
+
   cat >> /var/www/html/wp-config.php << 'WPEOF'
 
-#___ Force HTTPS — required behind ALB____
-
+// Force HTTPS (required behind AWS ALB)
 define('FORCE_SSL_ADMIN', true);
-if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
-  $_SERVER['HTTPS'] = 'on';
+
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
 }
+
+// Correct site URL
 define('WP_HOME', 'https://ganeshc.shop');
 define('WP_SITEURL', 'https://ganeshc.shop');
+
 WPEOF
+
   echo "HTTPS config added ✅"
 fi
 
@@ -48,21 +54,6 @@ chmod 644 /var/www/html/wp-config.php
 
 echo "Permissions fixed ✅"
 
-# ── Start Apache (KEEP LAST ALWAYS) ───────────────────────────
+# ── Start Apache (MUST BE LAST) ───────────────────────────────
 echo "Starting Apache..."
 exec apache2-foreground
-
-# ── Add HTTPS config to wp-config.php ────────────────────────
-if ! grep -q "FORCE_SSL_ADMIN" /var/www/html/wp-config.php; then
-  cat >> /var/www/html/wp-config.php << 'WPEOF'
-
-# Force HTTPS — required behind ALB
-define('FORCE_SSL_ADMIN', true);
-if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
-  $_SERVER['HTTPS'] = 'on';
-}
-define('WP_HOME', 'https://ganeshc.shop');
-define('WP_SITEURL', 'https://ganeshc.shop');
-WPEOF
-  echo "HTTPS config added ✅"
-fi
