@@ -1,0 +1,331 @@
+1. Aws certificate manager creation
+	
+	- Request public certificates as per the registered domains - ganeshc.shop and dr.ganeshc.shop
+
+2. Aws route53 setup & link to Hostinger domain dns mgmt
+	
+        - create hosted zone
+	
+        - map the n-s under Hostinger domain
+	
+        - create record set from acm to r53
+
+3. AWS PROJECT/
+│
+├── .gitignore                          ← blocks tfvars from GitHub
+├── README.md                           ← full project documentation
+│
+├── terraform/
+│   ├── main.tf                         ← provider + S3 backend
+│   ├── variables.tf                    ← all variables declared
+│   ├── terraform.tfvars                ← your secrets (never push this)
+│   ├── vpc.tf                          ← VPC, subnets, IGW, NAT
+│   ├── sg.tf                           ← 4 security groups
+│   ├── rds.tf                          ← MySQL RDS
+│   ├── secrets.tf                      ← Secrets Manager
+│   ├── efs.tf                          ← EFS shared storage
+│   ├── ecr.tf                          ← Docker image registry
+│   ├── iam.tf                          ← EC2 + CodeBuild + Pipeline + Deploy roles
+│   ├── alb.tf                          ← ALB + Blue/Green target groups
+│   ├── asg.tf                          ← Launch template + ASG + CloudWatch
+│   ├── codepipeline.tf                 ← Full CI/CD pipeline
+│   ├── s3.tf                           ← Backups + CloudFront DR
+│   └── outputs.tf
+│
+├── docker/
+│   └── Dockerfile                      ← WordPress Docker image
+│
+├── cicd/
+│   ├── buildspec.yml                   ← Terraform + Docker + ECR push
+│   ├── appspec.yml                     ← Blue/Green lifecycle hooks
+│   └── scripts/
+│       ├── before_install.sh           ← Docker install + ECR login
+│       ├── after_install.sh            ← Pull image + run container
+│       ├── validate.sh                 ← Health check → rollback if fail
+│       └── after_allow_traffic.sh      ← Log after traffic shifts
+│
+└── scripts/
+    ├── user-data.sh                    ← EC2 bootstrap on first boot
+    └── docker-entrypoint.sh           ← Fetches secrets + starts WordPress
+
+
+
+4. Setup Tools on EC2
+
+sudo su -
+apt update -y
+apt install -y git curl wget jq unzip
+
+# Install Terraform
+wget -O - https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+
+apt update -y && apt install -y terraform
+
+# Install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+./aws/install
+
+# Verify
+terraform --version
+aws --version
+
+
+5. Create S3 State Bucket
+
+create a user with s3 and ec2 acess to create access key
+Configure AWS CLI
+aws configure
+# Enter:
+# Access Key ID     → your key
+# Secret Access Key → your secret
+# Region            → ap-south-1
+# Output format     → json
+
+# Verify
+aws sts get-caller-identity
+
+- aws configure
+
+aws s3api create-bucket \
+  --bucket ganeshc-terraform-state \
+  --region ap-south-1 \
+  --create-bucket-configuration LocationConstraint=ap-south-1
+
+aws s3api put-bucket-versioning \
+  --bucket ganeshc-terraform-state \
+  --versioning-configuration Status=Enabled
+
+echo "S3 state bucket ready ✅"
+
+
+6. Clone Your Repo Using SSH from GIT
+ 
+git config --global user.name "ganeshtamizarasi-hue"   
+git config --global user.email "ganeshtamizarasi@gmail.com"
+
+# Check if SSH key exists
+cat ~/.ssh/id_ed25519.pub
+
+# If no key exists, generate one
+ssh-keygen -t ed25519 -C "ganeshtamizarasi@gmail.com"
+# Press Enter 3 times
+
+# Copy the key
+cat ~/.ssh/id_ed25519.pub
+```
+
+Then go to GitHub:
+```
+GitHub → Settings → SSH and GPG keys
+→ New SSH key
+→ Paste the key → Save ✅
+
+git clone git@github.com:ganeshtamizarasi-hue/AWS-PROJECT.git
+
+*) After Clone — Verify All Files
+
+cd AWS-PROJECT
+find . -type f | grep -v .git
+
+7.  Get GitHub Connection ARN
+
+AWS Console → CodePipeline
+→ Settings (left menu)
+→ Connections
+→ Create connection
+  Provider : GitHub
+  Name     : github-connection
+→ Connect to GitHub → Authorize ✅
+→ Click connection name
+→ Copy the ARN
+```
+
+Looks like:
+```
+arn:aws:codeconnections:ap-south-1:145400477094:connection/0277be54-e92e-481a-93f6-d7735978b30a
+
+8. Fill terraform.tfvars
+
+cd ~/AWS-PROJECT/terraform
+
+nano terraform.tfvars
+
+Paste and fill your values:
+
+db_password = "prodadm123"
+
+acm_certificate_arn = "arn:aws:acm:ap-south-1:145400477094:certificate/9a37a51b-80df-4de1-95f3-db6031d5897e"
+
+acm_certificate_arn_us_east_1 = "arn:aws:acm:us-east-1:145400477094:certificate/d0f9fb5e-5776-4b7d-9e8a-1698562995aa"
+
+github_connection_arn = "arn:aws:codeconnections:ap-south-1:145400477094:connection/f4a8f815-ba1e-49ae-83ca-dee6f1be1a46"
+
+github_repo = "ganeshtamizarasi-hue/AWS-PROJECT"
+
+Ctrl+X → Y → Enter
+
+9. Run Terraform
+
+cd ~/AWS-PROEJCT/terraform
+
+# Initialize
+terraform init
+
+# Preview
+terraform plan
+
+# Apply — creates ALL AWS resources
+terraform apply
+# Type: yes
+```
+
+⏳ Takes **10–15 minutes.**
+
+✅ Done when you see outputs like:
+```
+alb_dns_name  = "prod-alb-xxx.ap-south-1.elb.amazonaws.com"
+ecr_repo_url  = "145400477094.dkr.ecr.ap-south-1.amazonaws.com/prod-wordpress"
+pipeline_name = "wordpress-prod-pipeline"
+
+
+10. Build & Push Docker Image to ECR
+
+#Install Docker
+apt install -y docker.io
+systemctl start docker
+systemctl enable docker
+
+#Set ECR URL directly
+ECR_URL="145400477094.dkr.ecr.ap-south-1.amazonaws.com/prod-wordpress"
+REGION="ap-south-1"
+echo $ECR_URL
+
+# Login to ECR
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ECR_URL
+
+# Go to project folder
+cd ~/AWS-PROJECT
+
+# Build Docker image
+docker build -t wordpress-app -f docker/Dockerfile .
+
+#Tag image
+docker tag wordpress-app:latest $ECR_URL:latest
+
+#Push to ECR
+docker push $ECR_URL:latest
+
+#Verify image is in ECR
+aws ecr list-images \
+  --repository-name prod-wordpress \
+  --region $REGION
+
+11. Install CodeDeploy Agent on EC2
+
+apt install -y ruby-full wget
+cd /home/ubuntu
+
+wget https://aws-codedeploy-ap-south-1.s3.ap-south-1.amazonaws.com/latest/install
+chmod +x ./install
+./install auto
+
+systemctl start codedeploy-agent
+systemctl enable codedeploy-agent
+
+# Verify
+systemctl status codedeploy-agent
+# Should show: active (running) ✅
+```
+
+--Verify All AWS Resources
+
+Check each one in AWS Console:
+```
+✅ VPC             → EC2 → VPC → prod-vpc
+✅ RDS             → RDS → prod-wordpress-db (available)
+✅ Secrets Manager → wordpress-db-secret (retrieve and verify)
+✅ EFS             → EFS → prod-wordpress-efs
+✅ ECR             → ECR → prod-wordpress (image visible)
+✅ ALB             → EC2 → Load Balancers → prod-alb
+✅ ASG             → EC2 → Auto Scaling → prod-wordpress-asg
+✅ Target Groups   → prod-blue-tg + prod-green-tg
+✅ CodePipeline    → wordpress-prod-pipeline
+
+
+12.  Push Code to Trigger Pipeline
+
+cd ~/AWS-PROJECT
+
+# Add all files including cicd/ docker/ scripts/
+git add .
+git commit -m "Initial deployment — Terraform + Docker + CI/CD - V.9.28"
+git push origin main
+```
+
+Watch pipeline run:
+```
+AWS Console → CodePipeline
+→ wordpress-prod-pipeline
+
+Stage 1: Source  → ✅ GitHub pulled
+Stage 2: Build   → ✅ Terraform + Docker + ECR
+Stage 3: Deploy  → ✅ Blue/Green deployment
+```
+
+⏳ Takes **10–15 minutes** for full pipeline run.
+
+---
+
+13. Test Everything
+
+### Test 1 — Health Check
+```
+AWS Console → EC2 → Target Groups
+→ prod-blue-tg → Targets tab
+→ Instances should show: Healthy ✅
+
+Open browser:
+→ http://your-alb-dns-name/healthy.html
+→ Should show: healthy ✅
+```
+
+### Test 2 — Full Site
+```
+Open browser:
+→ https://ganeshc.shop
+→ WordPress setup page ✅
+```
+
+### Test 3 — DR Site
+```
+Open browser:
+→ https://dr.ganeshc.shop
+→ DR site via CloudFront ✅
+
+
+Test 4 — Blue/Green Working
+
+# Make small change and push
+echo "<!-- v2 -->" >> README.md
+git add .
+git commit -m "Test Blue/Green deployment v2"
+git push origin main
+```
+
+Watch in AWS Console:
+```
+CodePipeline triggers ✅
+  ↓
+CodeBuild runs ✅
+  ↓
+CodeDeploy creates Green instances ✅
+  ↓
+validate.sh passes ✅
+  ↓
+ALB shifts Blue → Green ✅
+  ↓
+Blue terminated ✅
